@@ -1,0 +1,49 @@
+/* Sidebar Submenu Logic */
+.nav-submenu {
+    list-style: none;
+    padding-left: 20px;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out; /* Smooth accordion effect */
+}
+
+/* Discipline: Use a class to handle visibility, not inline styles */
+.nav-submenu.is-hidden {
+    display: none;
+}
+
+/* Tightening the vertical distance */
+.nav-sub-item {
+    margin-top: 2px;
+    margin-bottom: 2px;
+}
+
+.nav-sub-item .nav-link {
+    padding-top: 4px;   /* Reduced from standard link padding */
+    padding-bottom: 4px;
+    font-size: 0.9rem;  /* Slightly smaller for hierarchy */
+    display: block;
+}
+
+
+/* Parent menu item when a child is active */
+.parent-active {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-left: 3px solid #ff4d4d; /* Subtle indicator */
+}
+
+/* The specific active sub-link: Bold and Red as requested */
+.sub-active {
+    color: #ff4d4d !important; /* Sovereign Red */
+    font-weight: bold !important;
+    background-color: rgba(255, 77, 77, 0.05);
+}
+
+.nav-submenu.is-hidden {
+    display: none;
+}
+
+/* Hover effect for discipline */
+.nav-sub-item .nav-link:hover {
+    color: #ff4d4d;
+    transition: 0.2s ease-in-out;
+}

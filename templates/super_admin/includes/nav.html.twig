@@ -1,0 +1,86 @@
+{# templates/super_admin/includes/sidebar.html.twig #}
+{% set current_route = app.request.attributes.get('_route') %}
+{# Determine if we are inside any Cat-related page #}
+{% set is_cat_active = current_route starts with 'app_superadmin_cat_' %}
+{% set is_subcat_active = current_route starts with 'app_superadmin_subcat_' %}
+
+<nav id="sidebar">
+    <div class="p-3 border-bottom border-secondary d-flex justify-content-between align-items-center">
+        <span class="fw-bold text-white brand-text">COMMAND</span>
+        <button id="toggleSidebar" class="toggle-btn" title="Minimize Sidebar">← &times;</button>
+    </div>
+    
+    <ul class="nav flex-column mt-2">
+        <li class="nav-item">
+            {# FIXED: Changed path to Named Route #}
+            <a href="{{ path('app_superadmin_index') }}" class="nav-link {{ current_route == 'app_superadmin_index' ? 'active-link' : '' }}">
+                <span class="nav-icon">D</span>
+                <span class="nav-text">Dashboard</span>
+            </a>
+        </li>
+
+        {# Cat Management Accordion #}
+        <li class="nav-item">
+            <a href="javascript:void(0)" 
+               class="nav-link submenu-toggle {{ is_cat_active ? 'parent-active' : '' }}" 
+               data-target="cat-submenu">
+                <span class="nav-icon">C</span>
+                <span class="nav-text">Cat Management</span>
+                <span class="arrow-icon">{{ is_cat_active ? '▲' : '▼' }}</span>
+            </a>
+            
+            <ul id="cat-submenu" 
+                class="nav-submenu {{ is_cat_active ? '' : 'is-hidden' }}" 
+                style="{{ is_cat_active ? 'display: block;' : '' }}">
+                
+                <li class="nav-sub-item">
+                    {# FIXED: Changed path to Named Route #}
+                    <a href="{{ path('app_superadmin_cat_index') }}" 
+                       class="nav-link {{ current_route == 'app_superadmin_cat_index' ? 'sub-active' : '' }}">
+                        <span class="nav-text">View All</span>
+                    </a>
+                </li>
+                <li class="nav-sub-item">
+                    {# FIXED: Changed path to Named Route #}
+                    <a href="{{ path('app_superadmin_cat_create') }}" 
+                       class="nav-link {{ current_route == 'app_superadmin_cat_create' ? 'sub-active' : '' }}">
+                        <span class="nav-text">Add New</span>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+
+        <li class="nav-item">
+            <a href="javascript:void(0)" 
+               class="nav-link submenu-toggle {{ is_subcat_active ? 'parent-active' : '' }}" 
+               data-target="subcat-submenu">
+                <span class="nav-icon">S</span>
+                <span class="nav-text">Subcat Management</span>
+                <span class="arrow-icon">{{ is_subcat_active ? '▲' : '▼' }}</span>
+            </a>
+            <ul id="subcat-submenu" class="nav-submenu {{ is_subcat_active ? '' : 'is-hidden' }}" style="{{ is_subcat_active ? 'display: block;' : '' }}">
+                <li class="nav-sub-item">
+                    <a href="{{ path('app_superadmin_subcat_index') }}" class="nav-link {{ current_route == 'app_superadmin_subcat_index' ? 'sub-active' : '' }}">
+                        <span class="nav-text">View All</span>
+                    </a>
+                </li>
+                <li class="nav-sub-item">
+                    <a href="{{ path('app_superadmin_subcat_create') }}" class="nav-link {{ current_route == 'app_superadmin_subcat_create' ? 'sub-active' : '' }}">
+                        <span class="nav-text">Add New</span>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+
+
+        <li class="nav-item">
+            {# FIXED: Changed path to Named Route #}
+            <a href="{{ path('app_logout') }}" class="nav-link text-danger">
+                <span class="nav-icon text-danger">E</span>
+                <span class="nav-text">Exit System</span>
+            </a>
+        </li>
+    </ul>
+</nav>

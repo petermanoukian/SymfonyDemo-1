@@ -1,0 +1,101 @@
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.27.3/trumbowyg.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<script>
+    // 1. THE GLOBAL VARIABLE
+    let globalCatId = null;
+
+    /**
+     * Sets the global ID and triggers a re-check if name is already present
+     */
+/**
+     * Sets the global ID and triggers a re-check if name is already present
+     */
+    function setGlobalCat(val) {
+        if (!val) return;
+        globalCatId = val;
+        console.log("Sovereign Category ID Locked: " + globalCatId);
+        
+        // --- THE FIX STARTS HERE ---
+        // Find the subcategory name input field
+        const nameEl = document.getElementById('subcat_name');
+        
+        // If the user has already typed something, we MUST re-validate immediately
+        // because the name might be available in Cat A but taken in Cat B.
+        if (nameEl && nameEl.value.trim().length > 2) {
+            checkSubcatName(nameEl); 
+        } else if (nameEl) {
+            // If the name is too short, just clear the old red/green styles
+            $(nameEl).removeClass('is-invalid is-valid');
+            $('#name_feedback').html('');
+        }
+        // --- THE FIX ENDS HERE ---
+    }
+
+    /**
+     * The AJAX Check - receives 'this' from the name input
+     */
+    function checkSubcatName(el) {
+        if (!el) return;
+        
+        const nameValue = el.value.trim();
+        const $feedback = $('#name_feedback');
+        const $submitBtn = $('#submit_btn');
+
+        // Block if name too short OR if globalCatId hasn't been set yet
+        if (nameValue.length <= 2 || !globalCatId) {
+            $feedback.html('');
+            $(el).removeClass('is-invalid is-valid');
+            return;
+        }
+
+        $feedback.html('<div class="spinner-border spinner-border-sm text-primary"></div>');
+
+        $.ajax({
+            url: "{{ path('app_superadmin_subcat_check_name') }}",
+            method: "POST",
+            data: { 
+                name: nameValue, 
+                catid: globalCatId 
+            },
+            success: function(response) {
+                if (response.exists) {
+                    $(el).addClass('is-invalid').removeClass('is-valid');
+                    $feedback.html('<span class="text-danger small"><i class="bi bi-x"></i> ' + response.message + '</span>');
+                    $submitBtn.prop('disabled', true);
+                } else {
+                    $(el).addClass('is-valid').removeClass('is-invalid');
+                    $feedback.html('<span class="text-success small"><i class="bi bi-check"></i> ' + response.message + '</span>');
+                    $submitBtn.prop('disabled', false);
+                }
+            }
+        });
+    }
+
+    $(document).ready(function() {
+        // 1. Initialize Trumbowyg
+        $('.wysiwyg-editor').trumbowyg();
+
+        // 2. Define $catSelect by initializing Select2 (This makes it searchable)
+        const $catSelect = $('#parent_cat_select').select2({
+            theme: 'bootstrap-5',
+            width: '100%',
+            placeholder: 'Search for a category...'
+        });
+
+        // 3. Handle Initial Value (Pre-selected on load)
+        const initialVal = $catSelect.val();
+        if (initialVal) {
+            setGlobalCat(initialVal);
+        }
+
+        // 4. Handle Changes (Select2 compatible)
+        $catSelect.on('change', function() {
+            setGlobalCat($(this).val());
+        });
+    });
+
+
+   
+
+</script>

@@ -1,0 +1,138 @@
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+
+<script>
+$(document).ready(function() {
+    const bulkBtn = $('#bulkDeleteBtn');
+    const countDisplay = $('#selectedCount');
+
+    // 1. Initialize DataTables
+    const table = $('#catTable').DataTable({
+        processing: true,
+        serverSide: true,
+        pageLength: 5, // Default to 5
+        lengthMenu: [[5, 10, 20, 50,100,200], [5, 10, 20, 50,100,200]], // Override the 10, 25, 50, 100
+        ajax: {
+            url: "{{ path('app_superadmin_cat_data') }}",
+            type: "POST"
+        },
+        columns: [
+            { 
+                data: "id", 
+                orderable: false,  
+                searchable: false,
+                render: function(data) {
+                    return `<input type="checkbox" name="ids[]" value="${data}" class="form-check-input row-checkbox">`;
+                }
+            },
+            { data: "id" },
+            { data: "name" },
+            { data: "image", orderable: false },
+            { data: "file", orderable: false },
+            { 
+                data: "actions", 
+                orderable: false, 
+                className: "text-end" 
+            }
+        ],
+        order: [[1, 'desc']],
+        drawCallback: function() {
+            $('#selectAll').prop('checked', false);
+            updateBulkBtn();
+        }
+    });
+
+    // 2. Updated Bulk Logic (Hide button if count is 0)
+    function updateBulkBtn() {
+        const checkedCount = $('.row-checkbox:checked').length;
+        
+        // Force the number to zero/count immediately
+        countDisplay.text(checkedCount);
+        
+        // Ensure the button disappears if count is 0
+        if (checkedCount > 0) {
+            bulkBtn.fadeIn(150);
+        } else {
+            bulkBtn.hide(); // Use .hide() for an instant purge of the button
+        }
+    }
+
+    // 3. Inverse Selection Mechanism
+    $('#inverseBtn').on('click', function() {
+        $('.row-checkbox').each(function() {
+            $(this).prop('checked', !$(this).prop('checked'));
+        });
+        updateBulkBtn();
+    });
+
+    // Standard Listeners with (e)
+    $('#catTable').on('change', '.row-checkbox', function(e) {
+        updateBulkBtn();
+        if (!$(this).prop('checked')) $('#selectAll').prop('checked', false);
+    });
+
+    $('#selectAll').on('change', function(e) {
+        $('.row-checkbox').prop('checked', $(this).prop('checked'));
+        updateBulkBtn();
+    });
+
+    $('#clearBtn').on('click', function(e) {
+        e.preventDefault();
+        
+        // 1. Physically uncheck everything
+        $('.row-checkbox, #selectAll').prop('checked', false);
+        
+        // 2. Trigger the UI sentinel to reset count to 0 and hide the button
+        updateBulkBtn();
+    });
+
+// 5. The Bulk Executioner
+    bulkBtn.on('click', function(e) {
+        e.preventDefault();
+
+        // Count again just to be safe
+        const checkedCount = $('.row-checkbox:checked').length;
+
+        if (checkedCount === 0) {
+            alert('Please select at least one item.');
+            return;
+        }
+
+        if (confirm('Are you certain you wish to purge ' + checkedCount + ' entries from the registry?')) {
+            // Find the form that wraps your table
+            const form = $('#bulkActionForm'); 
+            
+            // If you don't have a form in HTML, we trigger the submit via the route
+            form.attr('action', "{{ path('app_superadmin_cat_delete_many') }}");
+            form.attr('method', 'POST');
+            form.submit();
+        }
+    });
+
+
+});
+
+function confirmDelete(id) {
+        if (confirm('Are you certain you wish to purge entry #' + id + ' from the registry?')) {
+            const form = document.createElement('form');
+            form.method = 'POST';
+            
+            // DOGMA: Use the route name. We replace the '0' placeholder with the actual ID.
+            form.action = "{{ path('app_superadmin_cat_delete', {'id': 0}) }}".replace('0', id);
+
+            const tokenInput = document.createElement('input');
+            tokenInput.type = 'hidden';
+            tokenInput.name = '_token';
+            tokenInput.value = '{{ csrf_token('app_superadmin') }}';
+
+            form.appendChild(tokenInput);
+            document.body.appendChild(form);
+            form.submit();
+        }
+    }
+
+
+
+</script>

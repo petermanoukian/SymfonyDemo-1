@@ -1,0 +1,152 @@
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<script>
+$(document).ready(function() {
+    const bulkBtn = $('#bulkDeleteBtn');
+    const countDisplay = $('#selectedCount');
+    const categoryFilter = $('#filterByCategory');
+
+    // 1. Get Initial ID directly from the dropdown (the source of truth)
+    // If nothing is selected, it defaults to an empty string which we turn to 0
+    let initialCatId = categoryFilter.val() || 0;
+
+    // 2. Initialize DataTables for Subcategories
+    const table = $('#subcatTable').DataTable({
+        processing: true,
+        serverSide: true,
+        pageLength: 10,
+        lengthMenu: [[5, 10, 20, 50, 100, 200], [5, 10, 20, 50, 100, 200]],
+        ajax: {
+            // Point to the specific data route
+            url: '/superadmin/subcat/ajaxdata/' + initialCatId,
+            type: "POST",
+            data: function (d) {
+                // Ensure the current filter value is always sent in the POST body too
+                d.catid = categoryFilter.val();
+            }
+        },
+        columns: [
+            { 
+                data: "id", 
+                orderable: false,  
+                searchable: false,
+                render: function(data) {
+                    return `<input type="checkbox" name="ids[]" value="${data}" class="form-check-input row-checkbox">`;
+                }
+            },
+            { data: "id" },
+            { data: "cat_name" }, 
+            { data: "name" },     
+            { 
+                data: "image", 
+                orderable: false,
+                render: function(data) {
+                    return data ? data : '<span class="text-muted">No Image</span>';
+                }
+            },
+            { 
+                data: "actions", 
+                orderable: false, 
+                className: "text-end" 
+            }
+        ],
+        order: [[1, 'desc']],
+        drawCallback: function() {
+            $('#selectAll').prop('checked', false);
+            updateBulkBtn();
+        }
+    });
+
+    // 3. Dropdown Filter Listener - Simple and direct
+    categoryFilter.on('change', function() {
+        let newId = $(this).val() || 0;
+        // Update URL and reload
+        table.ajax.url('/superadmin/subcat/ajaxdata/' + newId).load();
+    });
+
+    // 4. Bulk Logic
+    function updateBulkBtn() {
+        const checkedCount = $('.row-checkbox:checked').length;
+        countDisplay.text(checkedCount);
+        if (checkedCount > 0) {
+            bulkBtn.fadeIn(150);
+        } else {
+            bulkBtn.hide();
+        }
+    }
+
+    // 5. Selection Listeners
+    $('#inverseBtn').on('click', function() {
+        $('.row-checkbox').each(function() {
+            $(this).prop('checked', !$(this).prop('checked'));
+        });
+        updateBulkBtn();
+    });
+
+    $('#subcatTable').on('change', '.row-checkbox', function() {
+        updateBulkBtn();
+        if (!$(this).prop('checked')) $('#selectAll').prop('checked', false);
+    });
+
+    $('#selectAll').on('change', function() {
+        $('.row-checkbox').prop('checked', $(this).prop('checked'));
+        updateBulkBtn();
+    });
+
+    $('#clearBtn').on('click', function(e) {
+        e.preventDefault();
+        $('.row-checkbox, #selectAll').prop('checked', false);
+        updateBulkBtn();
+    });
+
+    // 6. Bulk Delete Execution
+    bulkBtn.on('click', function(e) {
+        e.preventDefault();
+        const checkedCount = $('.row-checkbox:checked').length;
+
+        if (confirm('Are you certain you wish to purge ' + checkedCount + ' subcategory entries?')) {
+            const form = $('#bulkActionForm'); 
+            form.attr('action', "{{ path('app_superadmin_subcat_delete_many') }}");
+            form.attr('method', 'POST');
+            form.submit();
+        }
+    });
+});
+
+// 7. Individual Delete Execution
+// 7. Individual Delete Execution
+function confirmDelete(id) {
+    if (confirm('Are you certain you wish to purge subcategory entry #' + id + '?')) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        
+        // Use a digit (0) so Symfony's \d+ requirement is satisfied during rendering
+        const deleteUrlTemplate = "{{ path('app_superadmin_subcat_delete', {'id': 0}) }}";
+        
+        // Replace the trailing '0' with the actual ID
+        // We use a regex /0$/ to ensure we only replace the ID at the end of the URL
+        form.action = deleteUrlTemplate.replace(/0$/, id);
+
+        const tokenInput = document.createElement('input');
+        tokenInput.type = 'hidden';
+        tokenInput.name = '_token';
+        tokenInput.value = '{{ csrf_token('app_superadmin') }}';
+
+        form.appendChild(tokenInput);
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+
+$(document).ready(function() {
+
+    $('.searchable').select2({
+        theme: 'bootstrap-5',
+        width: '100%',
+        placeholder: 'Search for a category...'
+    });
+});
+</script>

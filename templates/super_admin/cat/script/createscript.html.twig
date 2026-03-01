@@ -1,0 +1,60 @@
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.27.3/trumbowyg.min.js"></script>
+<script>
+    $(document).ready(function() {
+
+
+        
+
+        $('.wysiwyg-editor').trumbowyg({
+            btns: [
+                ['viewHTML'], ['undo', 'redo'], ['formatting'],
+                ['strong', 'em'], ['link'],
+                ['unorderedList', 'orderedList'], ['removeformat']
+            ],
+            autogrow: true
+        });
+    });
+
+
+    function checkNameAvailability(name) {
+        const $input = $('#cat_name_input');
+        const $feedback = $('#name_feedback');
+        const $submitBtn = $('button[type="submit"]');
+
+        if (name.length <= 2) {
+            $feedback.html('');
+            $input.removeClass('is-invalid is-valid');
+            $submitBtn.prop('disabled', false);
+            return;
+        }
+
+        // --- START SPINNER ---
+        $feedback.html('<div class="spinner-border spinner-border-sm text-primary" role="status"></div> <span class="text-muted ms-1">Searching registry...</span>');
+        $input.removeClass('is-invalid is-valid');
+
+        $.ajax({
+            url: "{{ path('app_superadmin_cat_check_name') }}",
+            method: "POST", // Changed to POST
+            data: { name: name },
+            success: function(response) {
+                if (response.status === 'neutral') {
+                    $feedback.html('');
+                    $input.removeClass('is-invalid is-valid');
+                    $submitBtn.prop('disabled', false);
+                } else if (response.exists) {
+                    $input.addClass('is-invalid').removeClass('is-valid');
+                    $feedback.html('<span class="text-danger fw-bold"><i class="bi bi-exclamation-octagon"></i> ' + response.message + '</span>');
+                    $submitBtn.prop('disabled', true);
+                } else {
+                    $input.addClass('is-valid').removeClass('is-invalid');
+                    $feedback.html('<span class="text-success fw-bold"><i class="bi bi-check-circle"></i> ' + response.message + '</span>');
+                    $submitBtn.prop('disabled', false);
+                }
+            },
+            error: function() {
+                $feedback.html('<span class="text-warning small">Connection error. Please try again.</span>');
+            }
+        });
+    }
+</script>

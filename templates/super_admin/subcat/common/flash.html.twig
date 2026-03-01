@@ -1,0 +1,34 @@
+{# templates/super_admin/cat/common/flash.html.twig #}
+
+{# 1. Global Form Errors (Non-field specific) #}
+{{ form_errors(form) }}
+
+{# 2. Flash Messages & Detailed Validation List #}
+{% for label, messages in app.flashes %}
+    {% for message in messages %}
+        <div class="alert alert-{{ label }} alert-dismissible fade show" role="alert">
+            <strong>{{ message }}</strong>
+            
+            {% if not form.vars.valid %}
+                <ul class="mt-2 mb-0">
+                    {# Global Errors #}
+                    {% for error in form.vars.errors %}
+                        <li>{{ error.message }}</li>
+                    {% endfor %}
+                    
+                    {# Field-Specific Errors #}
+                    {% for child in form.children %}
+                        {% for error in child.vars.errors %}
+                            <li>
+                                <strong>{{ child.vars.label ?: child.vars.name|replace({'_': ' '})|capitalize }}:</strong> 
+                                {{ error.message }}
+                            </li>
+                        {% endfor %}
+                    {% endfor %}
+                </ul>
+            {% endif %}
+
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endfor %}
+{% endfor %}

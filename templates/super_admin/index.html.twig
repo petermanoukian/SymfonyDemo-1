@@ -1,0 +1,31 @@
+{# templates/super_admin/index.html.twig #}
+{% extends 'layout/superadmin_layout.html.twig' %}
+
+{% block title %}Executive Command{% endblock %}
+
+{% block body %}
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">Sovereign Control Panel</h1>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card text-white bg-dark mb-3 shadow-sm border-danger">
+                <div class="card-header">System Status</div>
+                <div class="card-body">
+                    <h5 class="card-title text-success">Active</h5>
+                    <p class="card-text small">All systems operational. No unauthorized access detected.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <h5 class="card-title">Welcome, {{ app.user.userIdentifier }}</h5>
+                    <p>This area is restricted to Super Admin personnel. Your actions here influence the entire application structure.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

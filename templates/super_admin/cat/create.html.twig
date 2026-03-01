@@ -1,0 +1,102 @@
+{# templates/super_admin/cat/create.html.twig #}
+{% extends 'layout/superadmin_layout.html.twig' %}
+
+{% block title %}Create New Category{% endblock %}
+
+{% block stylesheets %}
+    {# Light WYSIWYG CSS #}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.27.3/ui/trumbowyg.min.css">
+{% endblock %}
+
+{% block body %}
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h5">Add New Category</h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+            <a href="{{ path('app_superadmin_cat_index') }}" class="btn btn-sm btn-outline-secondary">
+                <span class="nav-icon">←</span> Back to List
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+
+                    {{ include('super_admin/common/flash.html.twig') }}
+                   
+                    {{ form_start(form, {
+                        'action': path('app_superadmin_cat_store'),
+                        'method': 'POST',
+                        'attr': {'id': 'cat_creation_form'}
+                    }) }}
+
+                        <div class="mb-3">
+                            <label class="form-label">Name</label>
+                            {{ form_widget(form.name, {
+                                'attr': {
+                                    'class': 'form-control', 
+                                    'placeholder': 'Enter cat name...',
+                                    'id': 'cat_name_input',
+                                    'oninput': 'checkNameAvailability(this.value)'
+                                }
+                            }) }}
+                            <div id="name_feedback" class="small mt-1"></div>
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form_row(form.des, {
+                                'label': 'Short Description',
+                                'attr': {'class': 'form-control', 'rows': 4}
+                            }) }}
+                        </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Long Description</label>
+                    {# We use the widget directly so we can target it with JS #}
+                    {{ form_widget(form.dess, {'attr': {'class': 'form-control wysiwyg-editor'}}) }}
+                </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form_row(form.img_file, {
+                                    'label': 'Image',
+                                    'attr': {'class': 'form-control'}
+                                }) }}
+                                <small class="text-muted">JPG, PNG, GIF, WEBP (Max 20MB)</small>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form_row(form.filer_file, {
+                                    'label': 'Documentation Attachment',
+                                    'attr': {'class': 'form-control'}
+                                }) }}
+                                <small class="text-muted">PDF, DOC, TXT, Image (Max 20MB)</small>
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                    <div class="mt-4 text-center">
+                        <button type="submit" class="btn btn-primary px-5">
+                            <i class="bi bi-plus-circle me-2"></i>Add Category
+                        </button>
+                    </div>
+
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+
+        
+
+    </div>
+{% endblock %}
+
+
+
+{% block javascripts %}
+    {{ include('super_admin/cat/script/createscript.html.twig') }}
+{% endblock %}
+
+
+

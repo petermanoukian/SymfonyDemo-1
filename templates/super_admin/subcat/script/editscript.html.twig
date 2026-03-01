@@ -1,0 +1,102 @@
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.27.3/trumbowyg.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<script>
+    // 1. THE GLOBAL VARIABLES
+    let globalCatId = null;
+    let nameTimeout = null;
+
+    /**
+     * Sets the global ID and triggers a re-check if name is already present
+     */
+/**
+     * Sets the global ID and triggers a re-check if name is already present
+     */
+    function setGlobalCat(val) {
+        if (!val) return;
+        globalCatId = val;
+        console.log("Sovereign Category ID Locked: " + globalCatId);
+        
+        // Re-validate against the new category context immediately
+        const nameEl = document.getElementById('subcat_name');
+        if (nameEl && nameEl.value.trim().length > 2) {
+            checkSubcatName(nameEl);
+        }
+    }
+
+    /**
+     * The AJAX Check - modified for EDIT mode with ignoreId
+     */
+    function checkSubcatName(el) {
+        if (!el) return;
+        
+        const nameValue = el.value.trim();
+        const $feedback = $('#name_feedback');
+        const $submitBtn = $('#submit_btn');
+
+        // Capture current Subcat ID from the form action for the "Ignore" logic
+        const formAction = $('#subcat_edit_form').attr('action') || '';
+        const currentSubcatId = formAction.split('/').filter(Boolean).pop();
+
+        // Block if name too short OR if globalCatId hasn't been set yet
+        if (nameValue.length <= 2 || !globalCatId) {
+            $feedback.html('');
+            $(el).removeClass('is-invalid is-valid');
+            return;
+        }
+
+        clearTimeout(nameTimeout);
+        $feedback.html('<div class="spinner-border spinner-border-sm text-primary"></div>');
+
+        nameTimeout = setTimeout(() => {
+            $.ajax({
+                url: "{{ path('app_superadmin_subcat_check_name') }}",
+                method: "POST",
+                data: { 
+                    name: nameValue, 
+                    catid: globalCatId,
+                    ignoreId: currentSubcatId // Pass the ID so the DB knows this is an UPDATE
+                },
+                success: function(response) {
+                    if (response.exists) {
+                        $(el).addClass('is-invalid').removeClass('is-valid');
+                        $feedback.html('<span class="text-danger small"><i class="bi bi-x"></i> ' + response.message + '</span>');
+                        $submitBtn.prop('disabled', true);
+                    } else {
+                        $(el).addClass('is-valid').removeClass('is-invalid');
+                        $feedback.html('<span class="text-success small"><i class="bi bi-check"></i> ' + response.message + '</span>');
+                        $submitBtn.prop('disabled', false);
+                    }
+                }
+            });
+        }, 300);
+    }
+
+    $(document).ready(function() {
+        // 1. Initialize Trumbowyg
+        $('.wysiwyg-editor').trumbowyg();
+
+        // 2. Define $catSelect by initializing Select2
+        const $catSelect = $('#parent_cat_select').select2({
+            theme: 'bootstrap-5',
+            width: '100%',
+            placeholder: 'Search for a category...'
+        });
+
+        // 3. Handle Initial Value (Crucial for Edit mode load)
+        const initialVal = $catSelect.val();
+        if (initialVal) {
+            setGlobalCat(initialVal);
+        }
+
+        // 4. Handle Changes
+        $catSelect.on('change', function() {
+            setGlobalCat($(this).val());
+        });
+
+        // 5. Direct input listener for the name field
+        $('#subcat_name_input').on('input', function() {
+            checkSubcatName(this);
+        });
+    });
+</script>

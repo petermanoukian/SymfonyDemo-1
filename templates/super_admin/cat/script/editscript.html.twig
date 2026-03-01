@@ -1,0 +1,76 @@
+{# templates\super_admin\cat\script\create.html.twig #}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.27.3/trumbowyg.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('.wysiwyg-editor').trumbowyg({
+            btns: [
+                ['viewHTML'], ['undo', 'redo'], ['formatting'],
+                ['strong', 'em'], ['link'],
+                ['unorderedList', 'orderedList'], ['removeformat']
+            ],
+            autogrow: true
+        });
+    });
+
+
+    let nameTimeout = null;
+
+    function checkNameAvailability(nameValue) {
+        const $nameInput = $('#cat_name_input');
+        const $submitBtn = $('#cat_edit_form button[type="submit"]');
+        const $feedback = $('#name_feedback');
+        // Get the ID from our hidden field or variable
+        const currentId = "{{ cat.id }}"; 
+
+        clearTimeout(nameTimeout);
+
+        if (nameValue.length < 2) {
+            $feedback.html('');
+            $nameInput.removeClass('is-invalid is-valid');
+            return;
+        }
+
+        nameTimeout = setTimeout(() => {
+            $feedback.html('<span class="text-muted small">Verifying registry...</span>');
+
+            $.ajax({
+                // We hit the base route without the ID in the URL
+                url: "{{ path('app_superadmin_cat_check_name') }}",
+                method: "POST",
+                data: { 
+                    name: nameValue,
+                    ignoreId: currentId // Sent as POST data, not a route parameter
+                },
+                success: function(response) {
+                    if (response.exists) {
+                        $nameInput.addClass('is-invalid').removeClass('is-valid');
+                        $feedback.html('<span class="text-danger"><i class="bi bi-exclamation-octagon"></i> ' + response.message + '</span>');
+                        $submitBtn.prop('disabled', true);
+                    } else {
+                        $nameInput.addClass('is-valid').removeClass('is-invalid');
+                        $feedback.html('<span class="text-success"><i class="bi bi-check-circle"></i> ' + response.message + '</span>');
+                        $submitBtn.prop('disabled', false);
+                    }
+                },
+                error: function() {
+                    console.error("Registry connection lost.");
+                }
+            });
+        }, 300);
+    }
+
+    $(document).ready(function() {
+        // Initialize Trumbowyg
+        $('.wysiwyg-editor').trumbowyg({
+            btns: [['viewHTML'], ['formatting'], ['strong', 'em'], ['link'], ['unorderedList', 'removeformat']],
+            autogrow: true
+        });
+
+        // Trigger check on input
+        $('#cat_name_input').on('input', function() {
+            checkNameAvailability($(this).val());
+        });
+    });
+
+
+</script>

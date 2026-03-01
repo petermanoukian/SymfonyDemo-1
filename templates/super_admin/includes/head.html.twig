@@ -1,0 +1,13 @@
+{# templates/super_admin/includes/head.html.twig #}
+
+    
+    {# 1. Global Core Files (Always Load) #}
+    <link rel="stylesheet" href="{{ asset('css/bootstrap.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/css.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/nav.css') }}">
+
+    {# 2. The Independence Gate (Outside of <style>) #}
+    {% block stylesheets %}{% endblock %}
+
+    {# 3. Page-Specific Style Overrides (Optional) #}
+

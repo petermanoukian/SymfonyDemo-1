@@ -1,0 +1,89 @@
+{% extends 'layout/superadmin_layout.html.twig' %}
+
+{% block title %}Edit Category: {{ cat.name }}{% endblock %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.27.3/ui/trumbowyg.min.css">
+{% endblock %}
+
+{% block body %}
+    <div class="d-flex justify-content-between align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h5">Edit Category: <span class="text-primary">{{ cat.name }}</span></h1>
+        <a href="{{ path('app_superadmin_cat_index') }}" class="btn btn-sm btn-outline-secondary">
+            ← Back to List
+        </a>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body">
+
+
+
+                {{ include('super_admin/cat/common/flash.html.twig') }}
+
+
+
+                {{ form_start(form, {
+                    'action': path('app_superadmin_cat_update', {'id': cat.id}),
+                    'method': 'POST',
+                    'attr': {'id': 'cat_edit_form'}
+                }) }}
+                
+
+                <div class="mb-3">
+                    <label class="form-label font-weight-bold">Category Name</label>
+                    {{ form_widget(form.name, {
+                        'attr': {
+                            'class': 'form-control', 
+                            'placeholder': 'Enter cat name...',
+                            'id': 'cat_name_input',
+                            'oninput': 'checkNameAvailability(this.value)'
+                        }
+                    }) }}
+                    <div id="name_feedback" class="small mt-1"></div>
+                </div>
+
+                <div class="mb-3">
+                    {{ form_row(form.des, {'label': 'Short Description', 'attr': {'class': 'form-control'}}) }}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Long Description</label>
+                    {{ form_widget(form.dess, {'attr': {'class': 'form-control wysiwyg-editor'}}) }}
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        {{ form_row(form.img_file, {'label': 'Update Image', 'attr': {'class': 'form-control'}}) }}
+                        {% if cat.img2 %}
+                            <div class="mt-2">
+                                <small class="text-muted d-block">Current Image:</small>
+                                <img src="{{ asset(cat.img) }}" class="img-thumbnail" 
+                                style="max-width:200px;">
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        {{ form_row(form.filer_file, {'label': 'Update Documentation', 'attr': {'class': 'form-control'}}) }}
+                        {% if cat.filer %}
+                            <div class="mt-2">
+                                <small class="text-muted d-block">Current File:</small>
+                                <a href="{{ asset(cat.filer) }}" target="_blank" class="btn btn-xs btn-outline-info">View Attachment</a>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="mt-4 text-center">
+                    <button type="submit" class="btn btn-success px-5">
+                        Update Category 
+                    </button>
+                </div>
+            {{ form_end(form) }}
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ include('super_admin/cat/script/editscript.html.twig') }}
+{% endblock %}

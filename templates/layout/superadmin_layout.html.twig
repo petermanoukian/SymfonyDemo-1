@@ -1,0 +1,36 @@
+{# templates/layout/superadmin_layout.html.twig #}
+<!DOCTYPE html>
+<html lang="en">
+    
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token('app_superadmin') }}">
+    <title>{% block title %}Sovereign Control{% endblock %}</title>
+    
+    {{ include('super_admin/includes/head.html.twig') }}
+    {% block stylesheets %}{% endblock %}
+
+    <style>
+        {% block page_styles %}{% endblock %}
+    </style>
+
+</head>
+
+
+    <body>
+
+        {{ include('super_admin/includes/nav.html.twig') }}
+
+        <div id="main-content">
+            {{ include('super_admin/includes/header.html.twig') }}
+
+            <main class="p-4">
+                {% block body %}{% endblock %}
+            </main>
+        </div>
+
+        {{ include('super_admin/includes/scripts.html.twig') }}
+        {% block javascripts %}{% endblock %}
+    </body>
+</html>
